@@ -15,7 +15,7 @@ df.columns = df.columns.str.strip()
 # Convert date column
 df["Order Date"] = pd.to_datetime(
     df["Order Date"],
-    format="%m/%d/%Y"
+    format="%d/%m/%Y"
 )
 
 # Create Year and Month columns
