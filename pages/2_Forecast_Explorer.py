@@ -8,10 +8,13 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 st.title("🔮 Forecast Explorer")
 
 # Load data
-df = pd.read_csv("SampleSuperstore.csv", encoding="latin1")
+df = pd.read_csv("train.csv", encoding="latin1")
 df.columns = df.columns.str.strip()
 
-df["Order Date"] = pd.to_datetime(df["Order Date"])
+df["Order Date"] = pd.to_datetime(
+    df["Order Date"],
+    format="%d/%m/%Y"
+)
 
 # Load trained model
 with open("best_sales_model.pkl", "rb") as f:
