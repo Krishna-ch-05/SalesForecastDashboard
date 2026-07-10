@@ -4,77 +4,78 @@ import plotly.express as px
 
 st.set_page_config(page_title="Sales Overview", layout="wide")
 
-st.title("📈 Sales Overview Dashboard")
+st.title("📊 Sales Overview Dashboard")
 
-# Load Data
-@st.cache_data
-def load_data():
-    df = pd.read_csv("train.csv")
-    df["Order Date"] = pd.to_datetime(
+# Load dataset
+df = pd.read_csv("SampleSuperstore.csv", encoding="latin1")
+
+# Clean column names
+df.columns = df.columns.str.strip()
+
+# Convert date column
+df["Order Date"] = pd.to_datetime(
     df["Order Date"],
-    format="%d/%m/%Y"
+    format="%m/%d/%Y"
 )
-    df["Year"] = df["Order Date"].dt.year
-    df["Month"] = df["Order Date"].dt.month_name()
-    return df
 
-df = load_data()
+# Create Year and Month columns
+df["Year"] = df["Order Date"].dt.year
+df["Month"] = df["Order Date"].dt.to_period("M").astype(str)
 
-# Sidebar Filters
+# Sidebar filters
 st.sidebar.header("Filters")
 
 regions = st.sidebar.multiselect(
     "Select Region",
-    df["Region"].unique(),
-    default=df["Region"].unique()
+    options=sorted(df["Region"].dropna().unique()),
+    default=sorted(df["Region"].dropna().unique())
 )
 
 categories = st.sidebar.multiselect(
     "Select Category",
-    df["Category"].unique(),
-    default=df["Category"].unique()
+    options=sorted(df["Category"].dropna().unique()),
+    default=sorted(df["Category"].dropna().unique())
 )
 
-filtered = df[
+filtered_df = df[
     (df["Region"].isin(regions)) &
     (df["Category"].isin(categories))
 ]
 
-# KPI Cards
-col1, col2, col3 = st.columns(3)
+# KPI
+st.metric("Total Sales", f"${filtered_df['Sales'].sum():,.2f}")
 
-col1.metric("💰 Total Sales",
-            f"${filtered['Sales'].sum():,.2f}")
-
-col2.metric("📦 Total Orders",
-            filtered["Order ID"].nunique())
-
-col3.metric("💵 Total Profit",
-            f"${filtered['Profit'].sum():,.2f}")
-
-st.divider()
-
-# Sales by Year
-sales_year = filtered.groupby("Year")["Sales"].sum().reset_index()
-
-fig = px.bar(
-    sales_year,
-    x="Year",
-    y="Sales",
-    text_auto=True,
-    title="Total Sales by Year"
+# ----------------------------
+# Total Sales by Year
+# ----------------------------
+year_sales = (
+    filtered_df.groupby("Year")["Sales"]
+    .sum()
+    .reset_index()
 )
 
-st.plotly_chart(fig, use_container_width=True)
+fig1 = px.bar(
+    year_sales,
+    x="Year",
+    y="Sales",
+    title="Total Sales by Year",
+    text_auto=True
+)
 
-# Monthly Trend
-monthly = filtered.groupby(
-    pd.Grouper(key="Order Date", freq="ME")
-)["Sales"].sum().reset_index()
+st.plotly_chart(fig1, use_container_width=True)
+
+# ----------------------------
+# Monthly Sales Trend
+# ----------------------------
+monthly_sales = (
+    filtered_df.groupby("Month")["Sales"]
+    .sum()
+    .reset_index()
+)
 
 fig2 = px.line(
-    monthly,
-    x="Order Date",
+    monthly_sales,
+    x="Month",
     y="Sales",
     markers=True,
     title="Monthly Sales Trend"
@@ -82,38 +83,39 @@ fig2 = px.line(
 
 st.plotly_chart(fig2, use_container_width=True)
 
-# Region & Category Charts
-left, right = st.columns(2)
+# ----------------------------
+# Sales by Region
+# ----------------------------
+region_sales = (
+    filtered_df.groupby("Region")["Sales"]
+    .sum()
+    .reset_index()
+)
 
-with left:
-    region_sales = filtered.groupby("Region")["Sales"].sum().reset_index()
+fig3 = px.bar(
+    region_sales,
+    x="Region",
+    y="Sales",
+    title="Sales by Region",
+    text_auto=True
+)
 
-    fig3 = px.pie(
-        region_sales,
-        values="Sales",
-        names="Region",
-        title="Sales by Region"
-    )
+st.plotly_chart(fig3, use_container_width=True)
 
-    st.plotly_chart(fig3, use_container_width=True)
+# ----------------------------
+# Sales by Category
+# ----------------------------
+category_sales = (
+    filtered_df.groupby("Category")["Sales"]
+    .sum()
+    .reset_index()
+)
 
-with right:
-    cat_sales = filtered.groupby("Category")["Sales"].sum().reset_index()
+fig4 = px.pie(
+    category_sales,
+    names="Category",
+    values="Sales",
+    title="Sales by Category"
+)
 
-    fig4 = px.bar(
-        cat_sales,
-        x="Category",
-        y="Sales",
-        color="Category",
-        text_auto=True,
-        title="Sales by Category"
-    )
-
-    st.plotly_chart(fig4, use_container_width=True)
-
-# Data Preview
-st.subheader("Filtered Dataset")
-
-st.dataframe(filtered)
-
-st.success("Sales Overview Loaded Successfully!")
+st.plotly_chart(fig4, use_container_width=True)
