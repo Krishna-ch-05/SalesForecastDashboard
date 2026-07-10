@@ -7,7 +7,7 @@ st.set_page_config(page_title="Sales Overview", layout="wide")
 st.title("📊 Sales Overview Dashboard")
 
 # Load dataset
-df = pd.read_csv("SampleSuperstore.csv", encoding="latin1")
+df = pd.read_csv("train.csv", encoding="latin1")
 
 # Clean column names
 df.columns = df.columns.str.strip()
