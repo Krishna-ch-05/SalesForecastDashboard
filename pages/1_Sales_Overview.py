@@ -43,7 +43,20 @@ filtered_df = df[
 ]
 
 # KPI
-st.metric("Total Sales", f"${filtered_df['Sales'].sum():,.2f}")
+# KPI Cards
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric(
+        label="💰 Total Sales",
+        value=f"${filtered_df['Sales'].sum():,.2f}"
+    )
+
+with col2:
+    st.metric(
+        label="📦 Total Orders",
+        value=filtered_df["Order ID"].nunique()   # Use .shape[0] if Order ID doesn't exist
+    )
 
 # ----------------------------
 # Total Sales by Year
