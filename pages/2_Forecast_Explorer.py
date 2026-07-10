@@ -10,7 +10,7 @@ st.set_page_config(page_title="Forecast Explorer", layout="wide")
 st.title("🔮 Forecast Explorer")
 
 # Load Dataset
-df = pd.read_csv("SampleSuperstore.csv", encoding="latin1")
+df = pd.read_csv("train.csv", encoding="latin1")
 df.columns = df.columns.str.strip()
 
 # Convert Date
