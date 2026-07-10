@@ -20,7 +20,7 @@ def load_data():
     df["Order Date"],
     format="%d/%m/%Y"
 )
-    )
+    
 
     df = df.dropna(subset=["Order Date"])
 
